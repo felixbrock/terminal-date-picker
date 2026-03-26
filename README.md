@@ -4,6 +4,14 @@ A small `fzf`-based terminal date picker that copies the selected date to your c
 
 ![alt text](image.png)
 
+## Features
+
+- Fuzzy search dates as you type, for example `Wednesday` to narrow the list to Wednesdays.
+- See which occurrence of the weekday a date is, such as `1st`, `2nd`, or `4th` Wednesday of the month.
+- Preview the selected date in context with a three-month calendar view.
+- Copy the selected date to the clipboard in `Thu 2026-03-26` format.
+- Limit the picker to a custom year range when needed.
+
 ## Install packages
 
 Requirements:
