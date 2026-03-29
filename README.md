@@ -52,13 +52,13 @@ brew install bash python fzf
 
 ## Termux (Android)
 
-Install dependencies with `pkg`:
+Install both [Termux](https://f-droid.org/en/packages/com.termux/) and [Termux:API](https://f-droid.org/en/packages/com.termux.api/) from [F-Droid](https://f-droid.org/). Both apps must come from the same source to work together, and the Google Play Store versions are outdated.
+
+Then install dependencies inside Termux:
 
 ```bash
 pkg install bash python fzf termux-api
 ```
-
-You also need the [Termux:API](https://wiki.termux.com/wiki/Termux:API) companion app installed on your device for `termux-clipboard-set` to work.
 
 ## Install date picker
 
