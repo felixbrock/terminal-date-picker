@@ -22,6 +22,7 @@ Requirements:
 - Clipboard support:
   - Linux: `wl-copy`, `xclip`, or `xsel`
   - macOS: `pbcopy` is built in
+  - Termux: `termux-clipboard-set` (from `termux-api`)
 
 ## Linux
 
@@ -48,6 +49,16 @@ brew install bash python fzf
 ```
 
 `pbcopy` is included on macOS, so no extra clipboard package is required.
+
+## Termux (Android)
+
+Install dependencies with `pkg`:
+
+```bash
+pkg install bash python fzf termux-api
+```
+
+You also need the [Termux:API](https://wiki.termux.com/wiki/Termux:API) companion app installed on your device for `termux-clipboard-set` to work.
 
 ## Install date picker
 

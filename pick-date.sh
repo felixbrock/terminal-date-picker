@@ -96,6 +96,11 @@ copy_to_clipboard() {
     return 0
   fi
 
+  if command -v termux-clipboard-set >/dev/null 2>&1; then
+    termux-clipboard-set
+    return 0
+  fi
+
   if command -v pbcopy >/dev/null 2>&1; then
     pbcopy
     return 0
