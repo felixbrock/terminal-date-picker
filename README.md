@@ -22,7 +22,9 @@ Requirements:
 - Clipboard support:
   - Linux: `wl-copy`, `xclip`, or `xsel`
   - macOS: `pbcopy` is built in
-  - Termux: `termux-clipboard-set` (from `termux-api`)
+  - Termux: optional `termux-clipboard-set` (from `termux-api`)
+
+If no supported clipboard tool is available, `pick-date` still works and prints the selected date to standard output instead of copying it.
 
 ## Linux
 
@@ -52,13 +54,23 @@ brew install bash python fzf
 
 ## Termux (Android)
 
-Install both [Termux](https://f-droid.org/en/packages/com.termux/) and [Termux:API](https://f-droid.org/en/packages/com.termux.api/) from [F-Droid](https://f-droid.org/). Both apps must come from the same source to work together, and the Google Play Store versions are outdated.
+Install [Termux](https://f-droid.org/en/packages/com.termux/) from [F-Droid](https://f-droid.org/). The Google Play Store version is outdated.
 
 Then install dependencies inside Termux:
 
 ```bash
-pkg install bash python fzf termux-api
+pkg install bash python fzf
 ```
+
+Optional clipboard integration:
+
+```bash
+pkg install termux-api
+```
+
+If you also want Android clipboard access, install [Termux:API](https://f-droid.org/en/packages/com.termux.api/) from F-Droid as well. Both apps must come from the same source to work together.
+
+Without `Termux:API`, the picker will print the selected date and you can copy it using the terminal's normal text selection flow. You can also use `pick-date --print-only`.
 
 ## Install date picker
 

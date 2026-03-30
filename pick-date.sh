@@ -250,8 +250,9 @@ if ((print_only)); then
 fi
 
 if ! printf '%s' "$formatted_output" | copy_to_clipboard; then
-  printf 'Warning: no supported clipboard tool found. Selected date: %s\n' "$formatted_output" >&2
-  exit 1
+  printf '%s\n' "$formatted_output"
+  printf 'No supported clipboard tool found; printed the selected date instead.\n' >&2
+  exit 0
 fi
 
 printf 'Copied %s to clipboard.\n' "$formatted_output"
