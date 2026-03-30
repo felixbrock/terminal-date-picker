@@ -109,57 +109,12 @@ copy_to_clipboard() {
     return 0
   fi
 
-  if command -v termux-clipboard-set >/dev/null 2>&1; then
-    termux-clipboard-set "$text"
-    return 0
-  fi
-
   if command -v pbcopy >/dev/null 2>&1; then
     printf '%s' "$text" | pbcopy
     return 0
   fi
 
   return 1
-}
-
-run_with_timeout() {
-  local timeout_seconds pid timer status
-  timeout_seconds="$1"
-  shift
-
-  "$@" &
-  pid=$!
-
-  (
-    sleep "$timeout_seconds"
-    kill -TERM "$pid" 2>/dev/null || exit 0
-    sleep 1
-    kill -KILL "$pid" 2>/dev/null || true
-  ) &
-  timer=$!
-
-  if wait "$pid"; then
-    status=0
-  else
-    status=$?
-  fi
-
-  kill -TERM "$timer" 2>/dev/null || true
-  wait "$timer" 2>/dev/null || true
-
-  return "$status"
-}
-
-copy_selected_date() {
-  local text
-  text="$1"
-
-  if command -v termux-clipboard-set >/dev/null 2>&1; then
-    run_with_timeout 2 termux-clipboard-set "$text"
-    return $?
-  fi
-
-  copy_to_clipboard "$text"
 }
 
 dates_for_year() {
@@ -304,8 +259,8 @@ fi
 
 printf '%s\n' "$formatted_output"
 
-if ! copy_selected_date "$formatted_output"; then
-  printf 'Clipboard copy failed or timed out; printed the selected date instead.\n' >&2
+if ! copy_to_clipboard "$formatted_output"; then
+  printf 'No supported clipboard tool found; printed the selected date instead.\n' >&2
   exit 0
 fi
 
