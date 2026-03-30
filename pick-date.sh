@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ -z "${BASH_VERSION:-}" ]]; then
+if [ -z "${BASH_VERSION:-}" ]; then
   if command -v bash >/dev/null 2>&1; then
     exec bash "$0" "$@"
   fi
