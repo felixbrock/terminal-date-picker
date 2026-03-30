@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+if [[ -z "${BASH_VERSION:-}" ]]; then
+  if command -v bash >/dev/null 2>&1; then
+    exec bash "$0" "$@"
+  fi
+
+  printf 'Error: bash is required.\n' >&2
+  exit 1
+fi
+
+set -eu
+set -o pipefail 2>/dev/null || true
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 script_path="$script_dir/$(basename "${BASH_SOURCE[0]}")"
