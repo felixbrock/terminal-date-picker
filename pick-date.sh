@@ -91,28 +91,31 @@ if [[ -n "$filter" ]]; then
 fi
 
 copy_to_clipboard() {
+  local text
+  text="$1"
+
   if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null 2>&1; then
-    wl-copy
+    printf '%s' "$text" | wl-copy
     return 0
   fi
 
   if [[ -n "${DISPLAY:-}" ]] && command -v xclip >/dev/null 2>&1; then
-    xclip -selection clipboard
+    printf '%s' "$text" | xclip -selection clipboard
     return 0
   fi
 
   if [[ -n "${DISPLAY:-}" ]] && command -v xsel >/dev/null 2>&1; then
-    xsel --clipboard --input
+    printf '%s' "$text" | xsel --clipboard --input
     return 0
   fi
 
   if command -v termux-clipboard-set >/dev/null 2>&1; then
-    termux-clipboard-set
+    termux-clipboard-set "$text"
     return 0
   fi
 
   if command -v pbcopy >/dev/null 2>&1; then
-    pbcopy
+    printf '%s' "$text" | pbcopy
     return 0
   fi
 
@@ -259,10 +262,11 @@ if ((print_only)); then
   exit 0
 fi
 
-if ! printf '%s' "$formatted_output" | copy_to_clipboard; then
-  printf '%s\n' "$formatted_output"
+printf '%s\n' "$formatted_output"
+
+if ! copy_to_clipboard "$formatted_output"; then
   printf 'No supported clipboard tool found; printed the selected date instead.\n' >&2
   exit 0
 fi
 
-printf 'Copied %s to clipboard.\n' "$formatted_output"
+printf 'Copied %s to clipboard.\n' "$formatted_output" >&2
