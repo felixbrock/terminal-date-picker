@@ -91,26 +91,23 @@ if [[ -n "$filter" ]]; then
 fi
 
 copy_to_clipboard() {
-  local text
-  text="$1"
-
   if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null 2>&1; then
-    printf '%s' "$text" | wl-copy
+    wl-copy
     return 0
   fi
 
   if [[ -n "${DISPLAY:-}" ]] && command -v xclip >/dev/null 2>&1; then
-    printf '%s' "$text" | xclip -selection clipboard
+    xclip -selection clipboard
     return 0
   fi
 
   if [[ -n "${DISPLAY:-}" ]] && command -v xsel >/dev/null 2>&1; then
-    printf '%s' "$text" | xsel --clipboard --input
+    xsel --clipboard --input
     return 0
   fi
 
   if command -v pbcopy >/dev/null 2>&1; then
-    printf '%s' "$text" | pbcopy
+    pbcopy
     return 0
   fi
 
@@ -149,16 +146,12 @@ copy_selected_date() {
   local text
   text="$1"
 
-  if copy_to_clipboard "$text"; then
-    return 0
-  fi
-
   if command -v termux-clipboard-set >/dev/null 2>&1; then
     run_with_timeout 2 termux-clipboard-set "$text"
     return $?
   fi
 
-  return 1
+  printf '%s' "$text" | copy_to_clipboard
 }
 
 dates_for_year() {
@@ -301,9 +294,8 @@ if ((print_only)); then
   exit 0
 fi
 
-printf '%s\n' "$formatted_output"
-
 if ! copy_selected_date "$formatted_output"; then
+  printf '%s\n' "$formatted_output"
   printf 'Clipboard copy failed or timed out; printed the selected date instead.\n' >&2
   exit 0
 fi
