@@ -90,71 +90,37 @@ if [[ -n "$filter" ]]; then
   fzf_args+=(--filter "$filter")
 fi
 
+clipboard_needs_settle=0
+
 copy_to_clipboard() {
   local text
   text="$1"
 
   if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null 2>&1; then
+    clipboard_needs_settle=0
     printf '%s' "$text" | wl-copy
     return 0
   fi
 
   if [[ -n "${DISPLAY:-}" ]] && command -v xclip >/dev/null 2>&1; then
-    copy_with_x11_tool xclip -selection clipboard -- "$text"
+    clipboard_needs_settle=1
+    printf '%s' "$text" | xclip -selection clipboard
     return 0
   fi
 
   if [[ -n "${DISPLAY:-}" ]] && command -v xsel >/dev/null 2>&1; then
-    copy_with_x11_tool xsel --clipboard --input -- "$text"
+    clipboard_needs_settle=1
+    printf '%s' "$text" | xsel --clipboard --input
     return 0
   fi
 
   if command -v pbcopy >/dev/null 2>&1; then
+    clipboard_needs_settle=0
     printf '%s' "$text" | pbcopy
     return 0
   fi
 
   return 1
-}
-
-copy_with_x11_tool() {
-  local tool text tmp launcher
-  tool="$1"
-  shift
-  text="${!#}"
-
-  tmp="$(mktemp "${TMPDIR:-/tmp}/pick-date-clipboard.XXXXXX")" || return 1
-  printf '%s' "$text" > "$tmp"
-
-  case "$tool" in
-    xclip)
-      launcher='exec xclip -selection clipboard < "$1"'
-      ;;
-    xsel)
-      launcher='exec xsel --clipboard --input < "$1"'
-      ;;
-    *)
-      rm -f "$tmp"
-      return 1
-      ;;
-  esac
-
-  # Keep the clipboard owner alive after xterm exits when launched from i3.
-  if command -v setsid >/dev/null 2>&1; then
-    if ! setsid -f /bin/sh -c "$launcher" sh "$tmp" >/dev/null 2>&1; then
-      rm -f "$tmp"
-      return 1
-    fi
-  else
-    nohup /bin/sh -c "$launcher" sh "$tmp" >/dev/null 2>&1 &
-  fi
-
-  (
-    sleep 5
-    rm -f "$tmp"
-  ) >/dev/null 2>&1 &
-
-  return 0
 }
 
 run_with_timeout() {
@@ -341,6 +307,10 @@ if ! copy_selected_date "$formatted_output"; then
   printf '%s\n' "$formatted_output"
   printf 'Clipboard copy failed or timed out; printed the selected date instead.\n' >&2
   exit 0
+fi
+
+if ((clipboard_needs_settle)); then
+  sleep 0.3
 fi
 
 printf 'Copied %s to clipboard.\n' "$formatted_output" >&2
