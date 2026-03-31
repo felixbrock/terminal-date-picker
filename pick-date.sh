@@ -91,27 +91,70 @@ if [[ -n "$filter" ]]; then
 fi
 
 copy_to_clipboard() {
+  local text
+  text="$1"
+
   if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v wl-copy >/dev/null 2>&1; then
-    wl-copy
+    printf '%s' "$text" | wl-copy
     return 0
   fi
 
   if [[ -n "${DISPLAY:-}" ]] && command -v xclip >/dev/null 2>&1; then
-    xclip -selection clipboard
+    copy_with_x11_tool xclip -selection clipboard -- "$text"
     return 0
   fi
 
   if [[ -n "${DISPLAY:-}" ]] && command -v xsel >/dev/null 2>&1; then
-    xsel --clipboard --input
+    copy_with_x11_tool xsel --clipboard --input -- "$text"
     return 0
   fi
 
   if command -v pbcopy >/dev/null 2>&1; then
-    pbcopy
+    printf '%s' "$text" | pbcopy
     return 0
   fi
 
   return 1
+}
+
+copy_with_x11_tool() {
+  local tool text tmp launcher
+  tool="$1"
+  shift
+  text="${!#}"
+
+  tmp="$(mktemp "${TMPDIR:-/tmp}/pick-date-clipboard.XXXXXX")" || return 1
+  printf '%s' "$text" > "$tmp"
+
+  case "$tool" in
+    xclip)
+      launcher='exec xclip -selection clipboard < "$1"'
+      ;;
+    xsel)
+      launcher='exec xsel --clipboard --input < "$1"'
+      ;;
+    *)
+      rm -f "$tmp"
+      return 1
+      ;;
+  esac
+
+  # Keep the clipboard owner alive after xterm exits when launched from i3.
+  if command -v setsid >/dev/null 2>&1; then
+    if ! setsid -f /bin/sh -c "$launcher" sh "$tmp" >/dev/null 2>&1; then
+      rm -f "$tmp"
+      return 1
+    fi
+  else
+    nohup /bin/sh -c "$launcher" sh "$tmp" >/dev/null 2>&1 &
+  fi
+
+  (
+    sleep 5
+    rm -f "$tmp"
+  ) >/dev/null 2>&1 &
+
+  return 0
 }
 
 run_with_timeout() {
@@ -151,7 +194,7 @@ copy_selected_date() {
     return $?
   fi
 
-  printf '%s' "$text" | copy_to_clipboard
+  copy_to_clipboard "$text"
 }
 
 dates_for_year() {
