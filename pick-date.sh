@@ -109,11 +109,6 @@ copy_to_clipboard() {
     return 0
   fi
 
-  if command -v termux-clipboard-set >/dev/null 2>&1; then
-    termux-clipboard-set "$text"
-    return 0
-  fi
-
   if command -v pbcopy >/dev/null 2>&1; then
     printf '%s' "$text" | pbcopy
     return 0
@@ -154,12 +149,16 @@ copy_selected_date() {
   local text
   text="$1"
 
+  if copy_to_clipboard "$text"; then
+    return 0
+  fi
+
   if command -v termux-clipboard-set >/dev/null 2>&1; then
     run_with_timeout 2 termux-clipboard-set "$text"
     return $?
   fi
 
-  copy_to_clipboard "$text"
+  return 1
 }
 
 dates_for_year() {
